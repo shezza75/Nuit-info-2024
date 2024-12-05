@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labyrinthe Fixe</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+
+        #maze {
+            display: grid;
+            grid-template-columns: repeat(40, 25px);
+            grid-template-rows: repeat(30, 25px);
+            gap: 1px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .free { background-color: white; }
+        .obstacle { background-color: black; }
+        .player { background-color: red; }
+        .goal { background-color: green; }
+
+        #message {
+            font-size: 20px;
+            font-weight: bold;
+            color: green;
+        }
+
+        #restartBtn {
+            display: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Labyrinthe</h1>
+<div id="maze"></div>
+<p id="message"></p>
+<button id="restartBtn">Recommencer</button>
+
+<script>
+    function generateMaze(rows, cols, numObstacles) {
+        const maze = Array.from({ length: rows }, () => Array(cols).fill('free'));
+        let path = [[0, 0]];
+        maze[0][0] = 'free';
+
+        // Crée un chemin vers la sortie (coin inférieur droit)
+        let current = [0, 0];
+        const directions = [[1, 0], [0, 1]];  // Direction du mouvement (droite et bas)
+
+        // Génération du chemin vers la sortie
+        while (current[0] !== rows - 1 || current[1] !== cols - 1) {
+            const [x, y] = current;
+            const possibleMoves = directions
+                .map(([dx, dy]) => [x + dx, y + dy])
+                .filter(([nx, ny]) => nx >= 0 && ny >= 0 && nx < rows && ny < cols && maze[nx][ny] === 'free');
+
+            if (possibleMoves.length > 0) {
+                const [nextX, nextY] = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                path.push([nextX, nextY]);
+                current = [nextX, nextY];
+                maze[nextX][nextY] = 'free';
+            }
+        }
+
+        // La sortie est toujours la dernière case (bas à droite)
+        maze[rows - 1][cols - 1] = 'goal'; 
+
+        // Ajouter des obstacles tout en s'assurant qu'ils ne bloquent pas le chemin
+        let obstaclesPlaced = 0;
+        while (obstaclesPlaced < numObstacles) {
+            const rx = Math.floor(Math.random() * rows);
+            const ry = Math.floor(Math.random() * cols);
+
+            // Ajouter un obstacle uniquement si ce n'est pas le joueur ou la sortie
+            if (maze[rx][ry] === 'free' && !(rx === 0 && ry === 0) && !(rx === rows - 1 && ry === cols - 1)) {
+                maze[rx][ry] = 'obstacle';
+
+                // Si un obstacle empêche d'atteindre la sortie, on le retire
+                if (!isPathClear(maze, rows, cols)) {
+                    maze[rx][ry] = 'free'; // Enlève l'obstacle si le chemin est bloqué
+                } else {
+                    obstaclesPlaced++;
+                }
+            }
+        }
+
+        return maze;
+    }
+
+    // Vérifie que le chemin reste accessible
+    function isPathClear(maze, rows, cols) {
+        const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+        const stack = [[0, 0]];
+
+        while (stack.length > 0) {
+            const [x, y] = stack.pop();
+            if (visited[x][y]) continue;
+            visited[x][y] = true;
+
+            const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]]; // Haut, Bas, Gauche, Droite
+            directions.forEach(([dx, dy]) => {
+                const nx = x + dx;
+                const ny = y + dy;
+                if (nx >= 0 && ny >= 0 && nx < rows && ny < cols && maze[nx][ny] !== 'obstacle' && !visited[nx][ny]) {
+                    stack.push([nx, ny]);
+                }
+            });
+        }
+
+        // Vérifie que toutes les cases 'free' sont accessibles
+        for (let x = 0; x < rows; x++) {
+            for (let y = 0; y < cols; y++) {
+                if (maze[x][y] === 'free' && !visited[x][y]) {
+                    return false; // Si une case 'free' n'est pas visitée, le chemin est bloqué
+                }
+            }
+        }
+
+        return true;
+    }
+
+    function createMazeElement(maze) {
+        const mazeContainer = document.getElementById('maze');
+        mazeContainer.innerHTML = '';
+        maze.forEach((row, x) => {
+            row.forEach((cell, y) => {
+                const cellElement = document.createElement('div');
+                cellElement.className = `cell ${cell}`;
+                cellElement.dataset.x = x;
+                cellElement.dataset.y = y;
+                mazeContainer.appendChild(cellElement);
+            });
+        });
+    }
+
+    function movePlayer(event) {
+        const directions = {
+            ArrowUp: [-1, 0],
+            ArrowDown: [1, 0],
+            ArrowLeft: [0, -1],
+            ArrowRight: [0, 1],
+        };
+        const [dx, dy] = directions[event.key] || [0, 0];
+        const newX = playerPos[0] + dx;
+        const newY = playerPos[1] + dy;
+        if (newX >= 0 && newX < maze.length && newY >= 0 && newY < maze[0].length) {
+            if (maze[newX][newY] === 'free' || maze[newX][newY] === 'goal') {
+                document.querySelector(`[data-x='${playerPos[0]}'][data-y='${playerPos[1]}']`).classList.remove('player');
+                playerPos = [newX, newY];
+                const newCell = document.querySelector(`[data-x='${newX}'][data-y='${newY}']`);
+                newCell.classList.add('player');
+                if (maze[newX][newY] === 'goal') {
+                    document.getElementById('message').textContent = 'Vous avez gagné !';
+                    document.getElementById('restartBtn').style.display = 'block'; // Affiche le bouton
+                    window.removeEventListener('keydown', movePlayer); // Désactive les déplacements
+                }
+            }
+        }
+    }
+
+    function restartGame() {
+        // Réinitialise le jeu
+        const maze = generateMaze(30, 40, 500); // Génère un labyrinthe avec 500 obstacles
+        playerPos = [0, 0];
+        document.getElementById('message').textContent = '';
+        document.getElementById('restartBtn').style.display = 'none'; // Cache le bouton
+        createMazeElement(maze);
+        document.querySelector('[data-x="0"][data-y="0"]').classList.add('player');
+        window.addEventListener('keydown', movePlayer); // Réactive les déplacements
+    }
+
+    const maze = generateMaze(30, 40, 500); // Génère un labyrinthe avec 500 obstacles
+    let playerPos = [0, 0];
+    createMazeElement(maze);
+    document.querySelector('[data-x="0"][data-y="0"]').classList.add('player');
+
+    window.addEventListener('keydown', movePlayer);
+
+    document.getElementById('restartBtn').addEventListener('click', restartGame); // Redémarre le jeu quand le bouton est cliqué
+</script>
+
+</body>
+</html>

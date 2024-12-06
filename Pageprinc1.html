@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corps Humain Interactif</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Explorez le corps humain</h1>
+
+    <!-- Image du corps humain avec une carte -->
+    <img src="corps2_preview_rev_1.png" usemap="#bodymap" alt="Human body map" width="800" height="auto">
+
+    <!-- Définir les zones cliquables -->
+    <map name="bodymap">
+        <!-- Zone de la tête (ajustée) -->
+        <area shape="rect" coords="280,40,420,120" href="head_page.html" alt="Tête">
+        
+        <!-- Zone du torse (ajustée) -->
+        <area shape="rect" coords="280,130,420,300" href="torso_page.html" alt="Torse">
+        
+        <!-- Zone des bras (ajustée) -->
+        <area shape="rect" coords="100,120,700,200" href="arms_page.html" alt="Bras">
+        
+        <!-- Zone des jambes (encore plus bas) -->
+        <area shape="rect" coords="280,430,420,800" href="legs_page.html" alt="Jambes">
+    </map>
+
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu Snake</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            border: 2px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jeu Snake</h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const box = 20;  // Taille de chaque case
+        const size = 20; // Taille de la grille (20x20)
+        let snake, food, direction, game, gameOverFlag;
+
+        // Initialisation du jeu
+        function initGame() {
+            // Réinitialiser les variables
+            snake = [{ x: 10, y: 10 }]; // Position initiale du serpent
+            direction = "RIGHT"; // Direction initiale du serpent
+            gameOverFlag = false; // Flag de game over
+            placeFood(); // Placer la nourriture
+            game = setInterval(drawGame, 100); // Lancer le jeu
+        }
+
+        // Placer la nourriture dans un endroit aléatoire
+        function placeFood() {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * size);
+                y = Math.floor(Math.random() * size);
+            } while (isOccupied(x, y)); // S'assurer que la nourriture n'est pas sur le serpent
+            food = { x, y };
+        }
+
+        // Vérifier si une case est occupée (par la tête du serpent ou par la queue)
+        function isOccupied(x, y) {
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === x && snake[i].y === y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Dessiner la matrice de jeu (serpent et nourriture)
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Effacer le canvas
+
+            // Calcul de la prochaine position de la tête
+            let nextHead = { ...snake[0] };
+            if (direction === "LEFT") nextHead.x--;
+            if (direction === "UP") nextHead.y--;
+            if (direction === "RIGHT") nextHead.x++;
+            if (direction === "DOWN") nextHead.y++;
+
+            // Vérification des collisions
+            if (isCollision(nextHead)) {
+                gameOver();
+                return;
+            }
+
+            // Ajouter la nouvelle tête du serpent
+            snake.unshift(nextHead);
+
+            // Si le serpent mange la nourriture
+            if (nextHead.x === food.x && nextHead.y === food.y) {
+                placeFood(); // Replacer la nourriture
+            } else {
+                snake.pop(); // Retirer la queue du serpent (si la nourriture n'est pas mangée)
+            }
+
+            // Dessiner le serpent
+            drawSnake();
+
+            // Dessiner la nourriture
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x * box, food.y * box, box, box);
+        }
+
+        // Vérification des collisions
+        function isCollision(head) {
+            // Collision avec les murs
+            if (head.x < 0 || head.x >= size || head.y < 0 || head.y >= size) {
+                return true;
+            }
+
+            // Collision avec le corps du serpent (sauf la tête elle-même)
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Dessiner le serpent
+        function drawSnake() {
+            ctx.fillStyle = "green";
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillRect(snake[i].x * box, snake[i].y * box, box, box);
+            }
+        }
+
+        // Gérer les entrées du clavier pour déplacer le serpent
+        document.addEventListener("keydown", event => {
+            if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+            if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+        });
+
+        // Fonction de fin de jeu
+        function gameOver() {
+            clearInterval(game);
+            alert("Game Over ! Recommence.");
+            initGame();
+        }
+
+        // Lancer le jeu
+        initGame();
+    </script>
+</body>
+</html>

@@ -31,3 +31,18 @@ button:hover {
     justify-content: center;
     left: 50%;
 }
+
+
+.texte{
+    margin-left: 10vh;
+    margin-right: 10vh;
+    text-align: justify;
+}
+
+.retour{
+    text-decoration: none;
+    background-color: #ffbb00;
+    border-radius: 8px;
+    color: white;
+    padding: 0.5%;
+}

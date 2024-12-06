@@ -1,7 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    margin: 20px;
+    margin: 0;
 }
 
 h1 {
@@ -11,4 +11,44 @@ h1 {
 img {
     max-width: 100%;
     height: auto;
+}
+
+
+header{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+    gap: 10%;
+    padding: 3%;
+    background-color: rgba(31, 70, 211, 0.849);
+    margin: 0;
+    position:sticky
+}
+
+.lien{
+    text-decoration: none;
+    text-align: center;
+    color: white;
+}
+
+.lien:hover{
+    text-decoration: underline;
+}
+
+video{
+    margin: 2%;
+}
+
+.titre{
+    color: white;
+    font-size: 25px;
+}
+
+.li{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+    gap: 5%;
 }
